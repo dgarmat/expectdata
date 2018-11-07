@@ -5,7 +5,7 @@
 #' Check if a data frame has duplicates in a given column. If a vector is given, check for duplicates in the vector.
 #'
 #' @param df data frame to check
-#' @param group_by_column character vector name of column expecting no duplicates
+#' @param test_columns character vector name of column expecting no duplicates, if number vector given, column numbers
 #' @param stop_if_fail T/F for whether to consider failure an error
 #' @param report_duplicates T/F for whether to return a partial list of the top duplicates if failure
 #' @param return_df T/F whether to end function with dataframe input (as in if a check in part of a pipe)
@@ -31,34 +31,34 @@
 #'
 #' expect_no_duplicates(rownames(mtcars))
 #' # [1] "no vector duplicates...OK"
-expect_no_duplicates <- function(df, group_by_column = NA, stop_if_fail = TRUE, report_duplicates = TRUE, return_df = TRUE){
+expect_no_duplicates <- function(df, test_columns = NA, stop_if_fail = TRUE, report_duplicates = TRUE, return_df = TRUE){
   if(return_df){
     df_copy_for_later <- df
   }
 
   if (!("data.frame" %in% class(df)) & is.vector(df)){
     df <- data.frame("vector" = df)
-    group_by_column <- "vector"
+    test_columns <- "vector"
   }
 
   # no test column given, assume testing all for duplicates
-  if (is.na(group_by_column)){
-    group_by_column <- names(df)
+  if (is.na(test_columns)){
+    test_columns <- names(df)
   }
 
   # if number given, resave as field name with that number
-  if (is.numeric(group_by_column)){
-    group_by_column <- names(df)[group_by_column]
+  if (is.numeric(test_columns)){
+    test_columns <- names(df)[test_columns]
   }
 
-  if (sum(colnames(df) == as.name(group_by_column)) == 0) {
-    stop(paste0("No column named: ", group_by_column))
+  if (sum(colnames(df) == as.name(test_columns)) == 0) {
+    stop(paste0("No column named: ", test_columns))
   }
-  if (sum(colnames(df) == as.name(group_by_column)) > 1) {
-    stop(paste0("Expected only one, but multiple columns named: ", group_by_column))
+  if (sum(colnames(df) == as.name(test_columns)) > 1) {
+    stop(paste0("Expected only one, but multiple columns named: ", test_columns))
   }
 
-  for (column in group_by_column){
+  for (column in test_columns){
     dft <- group_by_(df, as.name(column))
     dft <- count(dft)
     dft <- filter(dft, n > 1)
@@ -299,3 +299,70 @@ expect_date <- function(df, cols, stop_if_fail = TRUE, return_df = TRUE){
 }
 
 
+#' Check number of rows and columns matches expectation of range
+#'
+#' @param df data frame to check. If a vector is given, it converts it into a one column dataframe to check length as rows
+#' @param min_nrow Integer of inclusive minimum OK
+#' @param max_nrow Integer of inclusive maximum OK. Default is same as minimum
+#' @param stop_if_fail T/F for whether to consider failure an error
+#' @param return_df T/F whether to end function with dataframe input (as in if a check in part of a pipe)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+expect_dimensions_between <- function(df, min_nrow = 0, max_nrow = Inf, min_cols = 0, max_cols = Inf,
+                                      stop_if_fail = TRUE, return_df = TRUE){
+  if(return_df){
+    df_copy_for_later <- df
+  }
+
+  if (!("data.frame" %in% class(df)) & is.vector(df)){
+    df <- data.frame("vector" = df)
+    cols <- "vector"
+  }
+
+  nrows <- nrow(df)
+  ncols <- ncol(df)
+
+  if(min_nrow == 0 & max_nrow == Inf & min_cols == 0 & max_cols == Inf){
+    # check that at least one dimension is requested
+    stop("No test dimensions given")
+  } else if(min_cols == 0 & max_cols == Inf){
+    # check rows only
+    if(nrows >= min_nrow & nrows <= max_nrow){
+      print(paste0("Number of rows is ", nrows, "...OK"))
+    } else {
+      ifelse(stop_if_fail,
+             stop(paste0("Number of rows is ", nrows, " not in range given of [", min_nrow, ", ", max_nrow, "]")),
+             warning(paste0("Number of rows is ", nrows, " not in range given of [", min_nrow, ", ", max_nrow, "]")))
+    }
+  } else if(min_nrow == 0 & max_nrow == Inf){
+    #check columns only
+    if(ncols >= min_cols & ncols <= max_cols){
+      print(paste0("Number of cols is ", ncols, "...OK"))
+    } else {
+      ifelse(stop_if_fail,
+             stop(paste0("Number of cols is ", ncols, " not in range given of [", min_cols, ", ", max_cols, "]")),
+             warning(paste0("Number of cols is ", ncols, " not in range given of [", min_cols, ", ", max_cols, "]")))
+    }
+  } else {
+    #check both rows and cols
+    if(nrows >= min_nrow & nrows <= max_nrow & ncols >= min_cols & ncols <= max_cols){
+      print(paste0("Number of rows is ", nrows, "and number of cols is ", ncols, "...OK"))
+    } else {
+      ifelse(stop_if_fail,
+             stop(paste0("Number of rows is ", nrows, "and number of cols is ", ncols,
+                         " one is not in range given of rows: [", min_nrow, ", ", max_nrow, "]",
+                         "cols: [", min_cols, ", ", max_cols, "]")),
+             warning(paste0("Number of rows is ", nrows, "and number of cols is ", ncols,
+                            " one is not in range given of rows: [", min_nrow, ", ", max_nrow, "]",
+                            "cols: [", min_cols, ", ", max_cols, "]")))
+    }
+  }
+
+  if(return_df){
+    df_copy_for_later
+  }
+
+}

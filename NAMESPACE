@@ -2,6 +2,7 @@
 
 export(expect_column_names_somewhere_in_data_frame)
 export(expect_date)
+export(expect_dimensions_between)
 export(expect_no_duplicates)
 export(expect_no_nas)
 export(expect_same_number_of_rows)

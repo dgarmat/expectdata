@@ -4,13 +4,13 @@
 \alias{expect_no_duplicates}
 \title{Check if a data frame has duplicates in a given column. If a vector is given, check for duplicates in the vector.}
 \usage{
-expect_no_duplicates(df, group_by_column = NA, stop_if_fail = TRUE,
+expect_no_duplicates(df, test_columns = NA, stop_if_fail = TRUE,
   report_duplicates = TRUE, return_df = TRUE)
 }
 \arguments{
 \item{df}{data frame to check}
 
-\item{group_by_column}{character vector name of column expecting no duplicates}
+\item{test_columns}{character vector name of column expecting no duplicates, if number vector given, column numbers}
 
 \item{stop_if_fail}{T/F for whether to consider failure an error}
 
