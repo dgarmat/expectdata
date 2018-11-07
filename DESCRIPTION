@@ -1,6 +1,6 @@
 Package: expectdata
 Type: Package
-Title: Tests Expectations of a Data Frame
+Title: Test Expectations of a Data Frame
 Version: 0.1.0
 Authors@R: person("Dan", "Garmat", email = "dgarmat@gmail.com", role = c("aut", "cre"))
 Description: This package runs expectation tests about data and returns an
