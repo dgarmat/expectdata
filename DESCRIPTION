@@ -1,0 +1,16 @@
+Package: expectdata
+Type: Package
+Title: Tests Expectations of a Data Frame
+Version: 0.1.0
+Authors@R: person("Dan", "Garmat", email = "dgarmat@gmail.com", role = c("aut", "cre"))
+Description: This package runs expectation tests about data and returns an
+    error when expectations are not met. Configuations allow that to be a 
+    warning instead. Piping is assumed by default, so that the test returns
+    the input data frame if no errors stop it. This means the test can be
+    part of a dplyr pipeline. This helps diagnose errors coming from data
+    sources that change in unexpected way early.
+License: MIT + file LICENSE
+URL: https://github.com/dgarmat
+BugReports: https://github.com/dgarmat
+Encoding: UTF-8
+LazyData: true
