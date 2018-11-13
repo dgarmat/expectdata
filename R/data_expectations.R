@@ -317,7 +317,7 @@ expect_dimensions_between <- function(df, min_nrow = 0, max_nrow = Inf, min_cols
     df_copy_for_later <- df
   }
 
-  if (!("data.frame" %in% class(df)) & is.vector(df)){
+  if (!("data.frame" %in% class(df))){
     df <- data.frame("vector" = df)
     cols <- "vector"
   }
@@ -332,10 +332,16 @@ expect_dimensions_between <- function(df, min_nrow = 0, max_nrow = Inf, min_cols
     # check rows only
     if(nrows >= min_nrow & nrows <= max_nrow){
       print(paste0("Number of rows is ", nrows, "...OK"))
-    } else {
+    } else if(max_nrow != 0){
       ifelse(stop_if_fail,
              stop(paste0("Number of rows is ", nrows, " not in range given of [", min_nrow, ", ", max_nrow, "]")),
              warning(paste0("Number of rows is ", nrows, " not in range given of [", min_nrow, ", ", max_nrow, "]")))
+    } else if(max_nrow == 0){
+      # if only checking for 0 rows, print df if error for debugging
+      print(df)
+      ifelse(stop_if_fail,
+             stop(paste0("Number of rows is ", nrows, " not 0")),
+             warning(paste0("Number of rows is ", nrows, " not 0")))
     }
   } else if(min_nrow == 0 & max_nrow == Inf){
     #check columns only
