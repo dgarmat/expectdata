@@ -144,6 +144,31 @@ expect_same_number_of_rows <- function(df1, df2 = data.frame(), stop_if_fail = T
   }
 }
 
+#' Check if a dataframe has no rows. If a vector is given the length of the vectors is checked.
+#'
+#' @param df1 dataframe or vector to check 
+#' @param stop_if_fail T/F for whether to consider failure an error
+#' @param report_rowcount T/F for whether to return the number of rows
+#' @param return_df T/F whether to end function with dataframe 1 input (as in if a check in part of a pipe)
+#'
+#' @return several options depending on whether it fails or succeeeds
+#' @export
+#'
+#' @examples
+#' expect_zero_rows(mtcars[mtcars$cyl == 0, ], return_df = F)
+#' # [1] "No rows found as expected...OK"
+#'
+#' expect_zero_rows(mtcars$cyl[mtcars$cyl == 0])
+#' # [1] "No rows found as expected...OK"
+#' # numeric(0)
+#'
+#' expect_zero_rows(mtcars)
+#' # Error in ifelse(stop_if_fail, stop(paste0("Different number of rows: ",  :
+#' #    Different number of rows: 32 vs: 0
+expect_zero_rows <- function(df1, stop_if_fail = TRUE, report_rowcount = FALSE, return_df = TRUE){
+  expect_same_number_of_rows(df1, data.frame(), stop_if_fail, report_rowcount, return_df)
+}
+
 #' Check if the column names you expect to be in the df, are indeed in there
 #'
 #' @param df
