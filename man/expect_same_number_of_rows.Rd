@@ -2,10 +2,11 @@
 % Please edit documentation in R/data_expectations.R
 \name{expect_same_number_of_rows}
 \alias{expect_same_number_of_rows}
-\title{Check if a dataframe has the same number of rows as another, or else 0 rows. If vectors are given the lengths of the vectors are compared.}
+\title{Check if a dataframe has the same number of rows as another, or else 0 rows. If vectors are given, the lengths of the vectors are compared.}
 \usage{
 expect_same_number_of_rows(df1, df2 = data.frame(),
-  stop_if_fail = TRUE, report_rowcount = FALSE, return_df = TRUE)
+  stop_if_fail = TRUE, report_rowcount = FALSE, return_df = TRUE,
+  show_fails = TRUE)
 }
 \arguments{
 \item{df1}{dataframe or vector to check (required)}
@@ -16,23 +17,37 @@ expect_same_number_of_rows(df1, df2 = data.frame(),
 
 \item{report_rowcount}{T/F for whether to return the number of rows}
 
-\item{return_df}{T/F whether to end function with dataframe 1 input (as in if a check in part of a pipe)}
+\item{return_df}{T/F for whether to end function with dataframe 1 input (as in if a check in part of a pipe)}
+
+\item{show_fails}{T/F for whether to show head(df1) and/or head(df2) if it doesn't match. This can help with the next step of debugging why there is a mismatch.}
 }
 \value{
 several options depending on whether it fails or succeeeds
 }
 \description{
-Check if a dataframe has the same number of rows as another, or else 0 rows. If vectors are given the lengths of the vectors are compared.
+Check if a dataframe has the same number of rows as another, or else 0 rows. If vectors are given, the lengths of the vectors are compared.
 }
 \examples{
 expect_same_number_of_rows(mtcars, mtcars)
-# [1] "Same number of rows...OK"
+[1] "Same number of rows...OK"
 
 expect_same_number_of_rows(mtcars, iris)
-# Error in ifelse(stop_if_fail, stop(paste0("Different number of rows: ",  :
-#    Different number of rows: 32 vs: 150
+                   mpg cyl disp  hp drat    wt  qsec vs am gear carb
+Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
+Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1
+Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.1         3.5          1.4         0.2  setosa
+2          4.9         3.0          1.4         0.2  setosa
+3          4.7         3.2          1.3         0.2  setosa
+4          4.6         3.1          1.5         0.2  setosa
+5          5.0         3.6          1.4         0.2  setosa
+6          5.4         3.9          1.7         0.4  setosa
+Error:  Different number of rows: 32 vs: 150
 
-expect_same_number_of_rows(mtcars)
-# Error in ifelse(stop_if_fail, stop(paste0("Different number of rows: ",  :
-#    Different number of rows: 32 vs: 0
+expect_same_number_of_rows(mtcars, show_fails = FALSE)
+Error:  Different number of rows: 32 vs: 0
 }

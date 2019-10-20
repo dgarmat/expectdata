@@ -52,10 +52,10 @@ expect_no_duplicates <- function(df, test_columns = NA, stop_if_fail = TRUE, rep
   }
 
   if (sum(colnames(df) == as.name(test_columns)) == 0) {
-    stop(paste0("No column named: ", test_columns))
+    stop(paste0("No column named: ", test_columns), call. = FALSE)
   }
   if (sum(colnames(df) == as.name(test_columns)) > 1) {
-    stop(paste0("Expected only one, but multiple columns named: ", test_columns))
+    stop(paste0("Expected only one, but multiple columns named: ", test_columns), call. = FALSE)
   }
 
   for (column in test_columns){
@@ -71,8 +71,8 @@ expect_no_duplicates <- function(df, test_columns = NA, stop_if_fail = TRUE, rep
         print(dft)
       }
       ifelse(stop_if_fail,
-             stop(paste0("Duplicates detected in column: ", column)),
-             warning(paste0("Duplicates detected in column: ", column)))
+             stop(paste0("Duplicates detected in column: ", column), call. = FALSE),
+             warning(paste0("Duplicates detected in column: ", column), call. = FALSE))
     }
   }
 
@@ -83,29 +83,42 @@ expect_no_duplicates <- function(df, test_columns = NA, stop_if_fail = TRUE, rep
 }
 
 
-#' Check if a dataframe has the same number of rows as another, or else 0 rows. If vectors are given the lengths of the vectors are compared.
+#' Check if a dataframe has the same number of rows as another, or else 0 rows. If vectors are given, the lengths of the vectors are compared.
 #'
 #' @param df1 dataframe or vector to check (required)
 #' @param df2 optional second dataframe or vector to compare (if not given, defaults to zero row data frame)
 #' @param stop_if_fail T/F for whether to consider failure an error
 #' @param report_rowcount T/F for whether to return the number of rows
-#' @param return_df T/F whether to end function with dataframe 1 input (as in if a check in part of a pipe)
+#' @param return_df T/F for whether to end function with dataframe 1 input (as in if a check in part of a pipe)
+#' @param show_fails T/F for whether to show head(df1) and/or head(df2) if it doesn't match. This can help with the next step of debugging why there is a mismatch.
 #'
 #' @return several options depending on whether it fails or succeeeds
 #' @export
 #'
 #' @examples
 #' expect_same_number_of_rows(mtcars, mtcars)
-#' # [1] "Same number of rows...OK"
+#' [1] "Same number of rows...OK"
 #'
 #' expect_same_number_of_rows(mtcars, iris)
-#' # Error in ifelse(stop_if_fail, stop(paste0("Different number of rows: ",  :
-#' #    Different number of rows: 32 vs: 150
+#'                    mpg cyl disp  hp drat    wt  qsec vs am gear carb
+#' Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+#' Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+#' Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+#' Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+#' Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
+#' Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1
+#' Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+#' 1          5.1         3.5          1.4         0.2  setosa
+#' 2          4.9         3.0          1.4         0.2  setosa
+#' 3          4.7         3.2          1.3         0.2  setosa
+#' 4          4.6         3.1          1.5         0.2  setosa
+#' 5          5.0         3.6          1.4         0.2  setosa
+#' 6          5.4         3.9          1.7         0.4  setosa
+#' Error:  Different number of rows: 32 vs: 150
 #'
-#' expect_same_number_of_rows(mtcars)
-#' # Error in ifelse(stop_if_fail, stop(paste0("Different number of rows: ",  :
-#' #    Different number of rows: 32 vs: 0
-expect_same_number_of_rows <- function(df1, df2 = data.frame(), stop_if_fail = TRUE, report_rowcount = FALSE, return_df = TRUE){
+#' expect_same_number_of_rows(mtcars, show_fails = FALSE)
+#' Error:  Different number of rows: 32 vs: 0
+expect_same_number_of_rows <- function(df1, df2 = data.frame(), stop_if_fail = TRUE, report_rowcount = FALSE, return_df = TRUE, show_fails = TRUE){
   # df2 = data.frame() default means if df2 is not specified, it checks if df1 has zero rows
   if(return_df){
     df_copy_for_later <- df1
@@ -124,7 +137,7 @@ expect_same_number_of_rows <- function(df1, df2 = data.frame(), stop_if_fail = T
     print(typeof(df1))
     print(class(df2))
     print(typeof(df2))
-    stop("One of the inputs is neither a data frame nor vector")
+    stop("One of the inputs is neither a data frame nor a vector", call. = FALSE)
   }
 
   if (nrow(df1) == nrow(df2)){
@@ -134,11 +147,17 @@ expect_same_number_of_rows <- function(df1, df2 = data.frame(), stop_if_fail = T
       print(paste0("Same number of rows", ifelse(report_rowcount, paste0(": ", nrow(df1)), ""), "...OK"))
     }
   } else{
+    if(show_fails){
+      print(head(df1)) 
+      if(nrow(df2) > 0){
+        print(head(df2)) 
+      }
+    }
     ifelse(stop_if_fail,
-           stop(paste0("Different number of rows: ", nrow(df1), " vs: ", nrow(df2))),
-           warning(paste0("Different number of rows: ", nrow(df1), " vs: ", nrow(df2))))
+           stop(paste0("Different number of rows: ", nrow(df1), " vs: ", nrow(df2)), call. = FALSE),
+           warning(paste0("Different number of rows: ", nrow(df1), " vs: ", nrow(df2)), call. = FALSE))
   }
-
+  
   if(return_df){
     df_copy_for_later
   }
@@ -150,6 +169,7 @@ expect_same_number_of_rows <- function(df1, df2 = data.frame(), stop_if_fail = T
 #' @param stop_if_fail T/F for whether to consider failure an error
 #' @param report_rowcount T/F for whether to return the number of rows
 #' @param return_df T/F whether to end function with dataframe 1 input (as in if a check in part of a pipe)
+#' @param show_fails T/F for whether to show head(df1) if it is non-zero. This can help with the next step of debugging why these records exist.
 #'
 #' @return several options depending on whether it fails or succeeeds
 #' @export
@@ -163,11 +183,18 @@ expect_same_number_of_rows <- function(df1, df2 = data.frame(), stop_if_fail = T
 #' # numeric(0)
 #'
 #' expect_zero_rows(mtcars)
-#' # Error in ifelse(stop_if_fail, stop(paste0("Different number of rows: ",  :
-#' #    Different number of rows: 32 vs: 0
-expect_zero_rows <- function(df1, stop_if_fail = TRUE, report_rowcount = FALSE, return_df = TRUE){
-  expect_same_number_of_rows(df1, data.frame(), stop_if_fail, report_rowcount, return_df)
+#'                    mpg cyl disp  hp drat    wt  qsec vs am gear carb
+#' Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+#' Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+#' Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+#' Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+#' Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
+#' Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1
+#' Error: Different number of rows: 32 vs: 0 
+expect_zero_rows <- function(df1, stop_if_fail = TRUE, report_rowcount = FALSE, return_df = TRUE, show_fails = TRUE){
+  expect_same_number_of_rows(df1, data.frame(), stop_if_fail, report_rowcount, return_df, show_fails)
 }
+
 
 #' Check if the column names you expect to be in the df, are indeed in there
 #'
@@ -195,7 +222,7 @@ expect_column_names_somewhere_in_data_frame <- function(df, colums_expected, ret
     cols_not_found <- colums_expected[!(colums_expected %in% names(df))]
     stop(paste0(paste0(cols_not_found, collapse = ", "), " column",
                 ifelse(length(cols_not_found) > 1, "s", ""),
-                " not found"))
+                " not found"), call. = FALSE)
   }
 
   if(return_df){
@@ -221,7 +248,7 @@ expect_column_names_somewhere_in_data_frame <- function(df, colums_expected, ret
 expect_values_only_in <- function(test_vector, correct_vector){
   if(typeof(test_vector) != typeof(correct_vector) |
      class(test_vector) != class(correct_vector)){
-    stop(paste0("typeof() or class() of test_vector does not match correct_vector"))
+    stop(paste0("typeof() or class() of test_vector does not match correct_vector"), call. = FALSE)
   }
 
   if(sum(!(unique(test_vector) %in% correct_vector)) == 0 ){
@@ -230,7 +257,7 @@ expect_values_only_in <- function(test_vector, correct_vector){
     vals_not_found <- unique(test_vector)[!(unique(test_vector) %in% correct_vector)]
     stop(paste0(paste0(vals_not_found, collapse = ", "), " value",
                 ifelse(length(vals_not_found) > 1, "s", ""),
-                " not found in list given"))
+                " not found in list given"), call. = FALSE)
   }
 }
 
@@ -267,7 +294,7 @@ expect_no_nas <- function(df, test_column = NA, na_tolerance = 0, return_df = TR
 
   na_sum <- sum(is.na(df))
   if(na_sum > na_tolerance){
-    stop(paste0("Detected ", na_sum, " NAs"))
+    stop(paste0("Detected ", na_sum, " NAs"), call. = FALSE)
   } else{
     print(paste0("Detected ", na_sum, " NAs...OK"))
   }
@@ -305,7 +332,7 @@ expect_date <- function(df, cols, stop_if_fail = TRUE, return_df = TRUE){
   for(co in cols){
     if (sum(colnames(df) %in% co) == 0) {
       # -i: would like to return all the columns not found, not just the first
-      stop(paste0("No column named: ", co))
+      stop(paste0("No column named: ", co), call. = FALSE)
     }
   }
 
@@ -314,8 +341,8 @@ expect_date <- function(df, cols, stop_if_fail = TRUE, return_df = TRUE){
     print(paste0("all columns are dates...OK"))
   } else if(sum(dfdates) < length(cols)){
     ifelse(stop_if_fail,
-           stop(paste0("Column is not a date: ", names(which(!dfdates)))),
-           warning(paste0("Column is not a date: ", names(which(!dfdates)))))
+           stop(paste0("Column is not a date: ", names(which(!dfdates))), call. = FALSE),
+           warning(paste0("Column is not a date: ", names(which(!dfdates))), call. = FALSE))
   }
 
   if(return_df){
@@ -359,14 +386,14 @@ expect_dimensions_between <- function(df, min_nrow = 0, max_nrow = Inf, min_cols
       print(paste0("Number of rows is ", nrows, "...OK"))
     } else if(max_nrow != 0){
       ifelse(stop_if_fail,
-             stop(paste0("Number of rows is ", nrows, " not in range given of [", min_nrow, ", ", max_nrow, "]")),
-             warning(paste0("Number of rows is ", nrows, " not in range given of [", min_nrow, ", ", max_nrow, "]")))
+             stop(paste0("Number of rows is ", nrows, " not in range given of [", min_nrow, ", ", max_nrow, "]"), call. = FALSE),
+             warning(paste0("Number of rows is ", nrows, " not in range given of [", min_nrow, ", ", max_nrow, "]"), call. = FALSE))
     } else if(max_nrow == 0){
       # if only checking for 0 rows, print df if error for debugging
       print(df)
       ifelse(stop_if_fail,
-             stop(paste0("Number of rows is ", nrows, " not 0")),
-             warning(paste0("Number of rows is ", nrows, " not 0")))
+             stop(paste0("Number of rows is ", nrows, " not 0"), call. = FALSE),
+             warning(paste0("Number of rows is ", nrows, " not 0"), call. = FALSE))
     }
   } else if(min_nrow == 0 & max_nrow == Inf){
     #check columns only
@@ -374,8 +401,8 @@ expect_dimensions_between <- function(df, min_nrow = 0, max_nrow = Inf, min_cols
       print(paste0("Number of cols is ", ncols, "...OK"))
     } else {
       ifelse(stop_if_fail,
-             stop(paste0("Number of cols is ", ncols, " not in range given of [", min_cols, ", ", max_cols, "]")),
-             warning(paste0("Number of cols is ", ncols, " not in range given of [", min_cols, ", ", max_cols, "]")))
+             stop(paste0("Number of cols is ", ncols, " not in range given of [", min_cols, ", ", max_cols, "]"), call. = FALSE),
+             warning(paste0("Number of cols is ", ncols, " not in range given of [", min_cols, ", ", max_cols, "]"), call. = FALSE))
     }
   } else {
     #check both rows and cols
@@ -385,10 +412,10 @@ expect_dimensions_between <- function(df, min_nrow = 0, max_nrow = Inf, min_cols
       ifelse(stop_if_fail,
              stop(paste0("Number of rows is ", nrows, "and number of cols is ", ncols,
                          " one is not in range given of rows: [", min_nrow, ", ", max_nrow, "]",
-                         "cols: [", min_cols, ", ", max_cols, "]")),
+                         "cols: [", min_cols, ", ", max_cols, "]"), call. = FALSE),
              warning(paste0("Number of rows is ", nrows, "and number of cols is ", ncols,
                             " one is not in range given of rows: [", min_nrow, ", ", max_nrow, "]",
-                            "cols: [", min_cols, ", ", max_cols, "]")))
+                            "cols: [", min_cols, ", ", max_cols, "]"), call. = FALSE))
     }
   }
 
