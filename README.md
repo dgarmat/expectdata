@@ -33,7 +33,7 @@ mtcars %>%
 #> [1] "no wt duplicates...OK"
 ```
 
-![](/private/var/folders/sn/drzwy6y91z11g0l94pkv897j6nq3zl/T/Rtmpx7o5h4/preview-10032104d601f.dir/expect_data_files/figure-markdown_github/unnamed-chunk-2-1.png)
+![](https://dgarmat.github.io/images/no_dupes_20191021.png)
 
 If there are no expectations violated, an "OK" message is printed.
 
