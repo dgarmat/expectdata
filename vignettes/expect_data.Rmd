@@ -4,7 +4,7 @@ author: "Dan Garmat"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Checking data against expectations in a data preparation pipeline with expectdata}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,13 +16,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-Expectdata is an R package that makes it easy to check assumptions about a data frame before conducting more advanced analyses. Below is a concise tour of some of the things expectdata can do for you.
+Expectdata is an R package that makes it easy to check assumptions about a data frame before conducting analyses. Below is a concise tour of some of the things expectdata can do for you.
 
 ## Check for unexpected duplication
 
-```{r}
+```{r, error = TRUE, purl = FALSE}
 library(expectdata)
-try(expect_no_duplicates(mtcars, "cyl"), silent = FALSE)
+expect_no_duplicates(mtcars, "cyl")
 ```
 
 The default `return_df == TRUE` option allows for using these function as part of a dplyr piped expression that is stopped when data assumptions are not kept.
@@ -39,7 +39,7 @@ mtcars %>%
 
 If there are no expectations violated, an "OK" message is printed.
 
-After joining two datasets you may want to verify that no unintended duplication occurred. Expectdata allows comparing pre- and post- processing to ensure the same number of rows before continuing.
+After joining two data sets you may want to verify that no unintended duplication occurred. Expectdata allows comparing pre- and post- processing to ensure they have the same number of rows before continuing.
 
 ```{r}
 expect_same_number_of_rows(mtcars, mtcars, return_df = FALSE)
@@ -49,22 +49,32 @@ expect_same_number_of_rows(mtcars, iris, show_fails = FALSE, stop_if_fail = FALS
 expect_same_number_of_rows(mtcars, show_fails = FALSE, stop_if_fail = FALSE, return_df = FALSE) 
 ```
 
-Can see how the `stop_if_fail = FALSE` option will turn failed expectations into warning instead of errors. 
+Can see how the `stop_if_fail = FALSE` option will turn failed expectations into warnings instead of errors. 
 
 ## Check for existance of problematic rows
 
-Comparing a dataframe to an empty, zero-length dataframe can also be done more explicitly. If the expectations fail, cases can be shown to begin the next step of exploring why these showed up.
+Comparing a data frame to an empty, zero-length data frame can also be done more explicitly. If the expectations fail, cases can be shown to begin the next step of exploring why these showed up.
 
-```{r}
+```{r, error = TRUE, purl = FALSE}
 expect_zero_rows(mtcars[mtcars$cyl == 0, ], return_df = TRUE)
 expect_zero_rows(mtcars$cyl[mtcars$cyl == 0])
-expect_zero_rows(mtcars, show_fails = TRUE, stop_if_fail = FALSE, return_df = FALSE)
+expect_zero_rows(mtcars, show_fails = TRUE)
 ```
 
+This works well at the end of a pipeline that starts with a data frame, runs some logic to filter to cases that should not exist, then runs `expect_zero_rows()` to check no cases exist.
 
-```{r}
+```{r, error = TRUE, purl = FALSE}
+# verify no cars have zero cylindars
+mtcars %>% 
+  filter(cyl == 0) %>% 
+  expect_zero_rows(return_df = FALSE)
+```
+
+Can also check for NAs in a vector, specific columns of a data frame, or a whole data frame.
+
+```{r, error = TRUE, purl = FALSE}
 expect_no_nas(mtcars, "cyl", return_df = FALSE)
 expect_no_nas(mtcars, return_df = FALSE)
 expect_no_nas(c(0, 3, 4, 5))
-try(expect_no_nas(c(0, 3, NA, 5)), silent = FALSE)
+expect_no_nas(c(0, 3, NA, 5))
 ```
