@@ -15,6 +15,7 @@
 #' @importFrom dplyr group_by_
 #' @importFrom dplyr count
 #' @importFrom dplyr filter
+#' @importFrom dplyr arrange
 #'
 #' @examples
 #' expect_no_duplicates(mtcars, "cyl")

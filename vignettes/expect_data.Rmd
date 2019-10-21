@@ -1,0 +1,70 @@
+---
+title: "Checking data against expectations in a data preparation pipeline with expectdata"
+author: "Dan Garmat"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Expectdata is an R package that makes it easy to check assumptions about a data frame before conducting more advanced analyses. Below is a concise tour of some of the things expectdata can do for you.
+
+## Check for unexpected duplication
+
+```{r}
+library(expectdata)
+try(expect_no_duplicates(mtcars, "cyl"), silent = FALSE)
+```
+
+The default `return_df == TRUE` option allows for using these function as part of a dplyr piped expression that is stopped when data assumptions are not kept.
+
+```{r}
+library(dplyr, warn.conflicts = FALSE)
+library(ggplot2)
+mtcars %>% 
+  filter(cyl == 4) %>% 
+  expect_no_duplicates("wt", return_df = TRUE) %>% 
+  ggplot(aes(x = wt, y = hp, color = mpg, size = mpg)) +
+  geom_point()
+```
+
+If there are no expectations violated, an "OK" message is printed.
+
+After joining two datasets you may want to verify that no unintended duplication occurred. Expectdata allows comparing pre- and post- processing to ensure the same number of rows before continuing.
+
+```{r}
+expect_same_number_of_rows(mtcars, mtcars, return_df = FALSE)
+expect_same_number_of_rows(mtcars, iris, show_fails = FALSE, stop_if_fail = FALSE, return_df = FALSE)
+
+# can also compare to no df2 to check is zero rows
+expect_same_number_of_rows(mtcars, show_fails = FALSE, stop_if_fail = FALSE, return_df = FALSE) 
+```
+
+Can see how the `stop_if_fail = FALSE` option will turn failed expectations into warning instead of errors. 
+
+## Check for existance of problematic rows
+
+Comparing a dataframe to an empty, zero-length dataframe can also be done more explicitly. If the expectations fail, cases can be shown to begin the next step of exploring why these showed up.
+
+```{r}
+expect_zero_rows(mtcars[mtcars$cyl == 0, ], return_df = TRUE)
+expect_zero_rows(mtcars$cyl[mtcars$cyl == 0])
+expect_zero_rows(mtcars, show_fails = TRUE, stop_if_fail = FALSE, return_df = FALSE)
+```
+
+
+```{r}
+expect_no_nas(mtcars, "cyl", return_df = FALSE)
+expect_no_nas(mtcars, return_df = FALSE)
+expect_no_nas(c(0, 3, 4, 5))
+try(expect_no_nas(c(0, 3, NA, 5)), silent = FALSE)
+```
