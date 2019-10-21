@@ -3,6 +3,8 @@ Test Expectations of a Data Frame
 
 Expectdata is an R package that makes it easy to check assumptions about a data frame before conducting analyses. Below is a concise tour of some of the things expectdata can do for you.
 
+Note: [assertR](https://github.com/ropensci/assertr) is an ropensci project that aims to have similar functionality. Pros and cons haven't been evaluated yet, but ropensci is a big pro for assertR.
+
 Check for unexpected duplication
 --------------------------------
 
